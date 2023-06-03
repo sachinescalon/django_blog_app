@@ -1,0 +1,91 @@
+
+#Django provides a command that allows you to create an initial project file structure. Run the following command in your shell prompt
+
+django-admin startproject mysite
+
+-----------------------
+#Run the following command in the shell prompt from the project’s root directory:
+----------------------------
+python manage.py startapp blog
+------------------------------
+#Run the following command in the shell prompt to open the Python shell:
+
+python manage.py shell
+
+------------------------------
+#we will need to create an initial migration for our Post model.
+python manage.py makemigrations blog
+
+-------------------------------------
+
+#Let’s take a look at the SQL code that Django will execute in the database to create the table for your 
+model. The sqlmigrate command takes the migration names and returns their SQL without executing it
+
+python manage.py sqlmigrate blog 0001
+
+
+---------------------------------------
+
+#Execute the following command in the shell prompt to apply existing migrations
+python manage.py migrate
+
+------------------------
+#First, you will need to create a user to manage the administration site. 
+python manage.py createsuperuser
+
+
+----------------------
+#Save objects
+#We created an object in memory first and then persisted it to the database
+
+from django.contrib.auth.models import User
+>>> from blog.models import Post
+>>> user = User.objects.get(username='admin')
+>>> post = Post(title='Another post',
+... slug='another-post',
+... body='Post body.',
+... author=user)
+>>> post.save()
+#You can also create the object and persist it into the database in a single operation using the create() method, as follows:
+Post.objects.create(title='One more post',
+ slug='one-more-post',
+ body='Post body.',
+ author=user)
+
+-------------------------
+#Updating objects
+post.title = 'New title'
+>>> post.save()
+
+--------------------
+#Fetching objects
+Post.objects.all()
+
+#Using the filter() method
+Post.objects.filter(publish__year=2022)
+
+Post.objects.filter(publish__year=2022, author__username='admin')
+
+#This equates to building the same QuerySet chaining multiple filters:
+>>> Post.objects.filter(publish__year=2022) \
+>>> .filter(author__username='admin')
+
+#Queries with field lookup methods are built using two underscores, for example, publish__
+#year, but the same notation is also used for accessing fields of related models, such as 
+#author__username.
+
+#Using exclude()
+Post.objects.filter(publish__year=2022) \
+>>> .exclude(title__startswith='Why'
+
+#Using order_by()
+Post.objects.order_by('title')
+Post.objects.order_by('-title')
+
+---------------------------
+
+#Deleting objects
+post = Post.objects.get(id=1)
+post.delete()
+
+

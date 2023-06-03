@@ -2,6 +2,10 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED)
 # Create your models here.
 class Post(models.Model):
     class Status(models.TextChoices):
@@ -16,6 +20,8 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=2,choices=Status.choices,default=Status.DRAFT)
 
+    objects = models.Manager() # The default manager.
+    published = PublishedManager() # Our custom manager.   
     # We have added a Meta class inside the model. This class defines metadata for the model. We use the
     # ordering attribute to tell Django that it should sort results by the publish field. This ordering will
     # apply by default for database queries when no specific order is provided in the query. We indicate
