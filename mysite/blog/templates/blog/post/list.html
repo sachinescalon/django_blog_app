@@ -1,17 +1,24 @@
 {% extends "blog/base.html" %}
 {% block title %}My Blog{% endblock %}
 {% block content %}
-<h1>My Blog</h1>
-{% for post in posts %}
-<h2>
-    <a href="{% url 'blog:post_detail' post.id %}">
-        {{ post.title }}
-    </a>
+    <h1>My Blog</h1>
+    {% for post in posts %}
+        <h2>
+            <!-- <a href=" url 'blog:post_detail' post.id "> -->
+            <!-- Canonical Url get_absolute_url which is retrieving values from method get_absolute_url overriden in post model  -->
+            <a href="{{ post.get_absolute_url }}">
+                {{ post.title }}
+            </a>
+            
+        </h2>
+        <p class="date">
+            Published {{ post.publish }} by {{ post.author }}
+        </p>
+        {{ post.body|truncatewords:30|linebreaks }}
+    {% endfor %}
     
-</h2>
-<p class="date">
-    Published {{ post.publish }} by {{ post.author }}
-</p>
-{{ post.body|truncatewords:30|linebreaks }}
-{% endfor %}
+    {% comment %} {% include "pagination.html" with page=posts %} {% endcomment %}
+
+    {% comment %} we have to use the right page object that is passed to the template. Django’s ListView generic view passes the page requested in a variable called page_obj. {% endcomment %}
+    {% include "pagination.html" with page=page_obj %} 
 {% endblock %}

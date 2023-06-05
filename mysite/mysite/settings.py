@@ -134,3 +134,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Email server configuration
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'sachindahda.escalon@gmail.com'
+# 16 digit gmail app password
+EMAIL_HOST_PASSWORD = 'joallihlmahrwwqj'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+#If you can’t use an SMTP server, you can tell Django to write emails to the console by adding the following setting to the settings.py file:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
