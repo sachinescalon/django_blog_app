@@ -111,3 +111,14 @@ by iterating through the form fields, as in the following example:
 {{ field.label_tag }} {{ field }}
 </div>
 {% endfor %}
+-----------------------------------
+you need to install django-taggit via pip by running the following command:
+pip install django-taggit==3.0.0
+------------------------------------
+from django.db.models import Count
+This is the Count aggregation function of the Django ORM. This function will allow you to perform
+aggregated counts of tags. django.db.models includes the following aggregation functions:
+• Avg: The mean value
+• Max: The maximum value
+• Min: The minimum value
+• Count: The total number of objects

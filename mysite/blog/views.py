@@ -1,16 +1,26 @@
 from django.shortcuts import render,get_object_or_404
 from django.http import  Http404
-from .models import Post
+from .models import Post,Comment
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 from django.views.generic import ListView
-from .forms import EmailPostForm
+from .forms import EmailPostForm,CommentForm
 from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+from taggit.models import Tag
+from django.db.models import Count
 
 # Create your views here.
-def post_list(request):
+def post_list(request,tag_slug=None):
     # posts=Post.published.all()
     post_list=Post.published.all()
 
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        print(f'tag_{tag}')
+        print(f'tag_{tag.__dict__}')
+        post_list = post_list.filter(tags__in=[tag])
+        
     paginator=Paginator(post_list,2)
     page_number=request.GET.get('page',1)
     # posts=paginator.page(page_number)
@@ -23,7 +33,8 @@ def post_list(request):
         # If page_number is out of range deliver last page of results
         posts = paginator.page(paginator.num_pages)
     context={
-        'posts':posts
+        'posts':posts,
+        'tag': tag
     }
     return render(request,template_name='blog/post/list.html',context=context)
 
@@ -40,7 +51,31 @@ def post_list(request):
 #SEO Friendly URL Genration in form of  /blog/2022/1/1/who-was-django-reinhardt/
 def post_detail(request, year, month, day,post ):
     post = get_object_or_404(Post,status=Post.Status.PUBLISHED,slug=post,publish__year=year,publish__month=month,publish__day=day)
-    context={'post': post}
+    # List of active comments for this post
+    comments=post.comments.filter(active=True)
+    # Form for users to comment
+
+    tags=post.tags.all().values()
+    print(f'tags_{tags}')
+    
+    tags_list=post.tags.all().values_list()
+    print(f'tags_list_{tags_list}')
+
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    print(f'post_tags_ids_{post_tags_ids}')
+    
+    print(f'post_   {post.id}')
+
+    similar_posts=Post.published.filter(tags__in=post.tags.all()).exclude(id=post.id)
+    print(f'similar_posts_{similar_posts}')
+    print(f'similar_posts_query_{similar_posts.query}')
+
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags','-publish')[:4]
+    print(f'similar_posts_{similar_posts.values()}')
+    # print(f'similar_posts_query_{similar_posts.query}')
+
+    form=CommentForm()
+    context={'post': post,'comments': comments,'form': form,'similar_posts':similar_posts}
     return render(request,'blog/post/detail.html',context=context)
 
 #class Based View for post_list view function written above
@@ -92,3 +127,20 @@ def post_share(request, post_id):
         # ... send email
     return render(request, 'blog/post/share.html', {'post': post,
     'form': form,'sent': sent})
+
+@require_POST
+def post_comment(request,post_id):
+    post=get_object_or_404(Post,id=post_id,status=Post.Status.PUBLISHED)
+    Comment=None
+    #A comment was posted
+    form=CommentForm(request.POST)
+    print(f'form_{form}')
+    if form.is_valid():
+        comment=form.save(commit=False)
+
+        # Assign the post to the comment
+        comment.post=post
+        # Save the comment to the database
+        comment.save()
+        print(f'comment_{comment}')
+    return render(request, 'blog/post/comment.html',{'post': post,'form': form,'comment': comment})
