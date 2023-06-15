@@ -19,15 +19,14 @@ services:
         container_name: mysqldb_blog_container
         command: --default-authentication-plugin=mysql_native_password
         environment:
-            - MYSQL_DATABASE=django-blog-app
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
             # - MYSQL_ALLOW_EMPTY_PASSWORD=true
-            - MYSQL_USER=sachin
-            - MYSQL_PASSWORD=123456
             # - MYSQL_ROOT_PASSWORD=123456
-        # environment:
-        #     MYSQL_ROOT_PASSWORD: password
         ports:
-                - 3306:3306
+                - 3306:${MYSQL_PORT}
         volumes:
             - ./data/mysql/db:/var/lib/mysql
     phpmyadmin:
@@ -35,8 +34,8 @@ services:
         restart: always
         environment:
             PMA_HOST: db
-            PMA_USER: root
-            PMA_PASSWORD: password
+            PMA_USER: ${MYSQL_USER}
+            PMA_PASSWORD: ${MYSQL_PASSWORD}
         ports:
         - "8080:80"
     # adminer_container:
@@ -46,15 +45,15 @@ services:
         #     # ADMINER_DESIGN: galkaev
         # ports: 
         #   - 8080:8080
-    adminer:
-           image: adminer
-           restart: always
-           ports:
-              - 8081:8080
-           environment:
-                ADMINER_DEFAULT_SERVER: db
-           links:
-              - db:db
+    # adminer:
+    #        image: adminer
+    #        restart: always
+    #        ports:
+    #           - 8081:8080
+    #        environment:
+    #             ADMINER_DEFAULT_SERVER: db
+    #        links:
+    #           - db:db
         #    depends_on: 
         #         - db
      
